@@ -6,19 +6,22 @@ const port = 5000
 const mongoDb = require("./db")
 mongoDb();
 
-app.use(cors());
+const allowedOrigins = process.env.ALLOWED_ORIGINS.split(',');
+
+app.use(cors({
+  origin: function(origin, callback){
+    // allow requests with no origin (like mobile apps or curl requests)
+    if(!origin) return callback(null, true);
+    if(allowedOrigins.indexOf(origin) === -1){
+      var msg = 'The CORS policy for this site does not allow access from the specified Origin.';
+      return callback(new Error(msg), false);
+    }
+    return callback(null, true);
+  }
+}));
 
 app.get('/', (req, res) => {
   res.send('Hello World!')
-})
-
-app.use((req,res,next)=>{
-  res.setHeader("Access-Control-Allow-Origin","https://quick-dine-frontend-3.vercel.app");
-  res.header(
-    "Access-Control-Allow-Headers",
-    "Origin,X-Requested-With, Content-Type, Accept"
-  );
-  next();
 })
 
 app.use(express.json())
